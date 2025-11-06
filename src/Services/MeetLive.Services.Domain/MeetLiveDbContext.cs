@@ -1,0 +1,23 @@
+﻿using MeetLive.Services.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace MeetLive.Services.Domain
+{
+    public class MeetLiveDbContext : DbContext
+    {
+        public MeetLiveDbContext(DbContextOptions<MeetLiveDbContext> options) : base(options)
+        {
+
+        }
+
+        public DbSet<UserInfo> UserInfos { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<UserInfo>(t =>
+            {
+                t.HasKey(m => m.UserId);
+                t.HasIndex(m => m.Email).IsUnique();
+            });
+        }
+    }
+}

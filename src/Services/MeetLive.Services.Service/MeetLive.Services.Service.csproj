@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MeetLive.Services.IService\MeetLive.Services.IService.csproj" />
+  </ItemGroup>
+
 </Project>
