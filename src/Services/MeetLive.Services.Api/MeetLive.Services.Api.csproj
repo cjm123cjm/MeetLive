@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MeetLive.Services.Service\MeetLive.Services.Service.csproj" />
+	  <ProjectReference Include="..\MeetLive.Services.WebSocket\MeetLive.Services.WebSocket.csproj" />
 	</ItemGroup>
 
 </Project>

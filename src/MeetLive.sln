@@ -5,15 +5,17 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{96B3A39A-5C64-4D5C-8E44-BBAF9482D0A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.Api", "Services\MeetLive.Services.Api\MeetLive.Services.Api.csproj", "{F892321E-CB42-4F5B-9227-6F4075D3EA10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetLive.Services.Api", "Services\MeetLive.Services.Api\MeetLive.Services.Api.csproj", "{F892321E-CB42-4F5B-9227-6F4075D3EA10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.Domain", "Services\MeetLive.Services.Domain\MeetLive.Services.Domain.csproj", "{C92E79C1-B783-4870-907B-BF735D77BBBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetLive.Services.Domain", "Services\MeetLive.Services.Domain\MeetLive.Services.Domain.csproj", "{C92E79C1-B783-4870-907B-BF735D77BBBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.IService", "Services\MeetLive.Services.IService\MeetLive.Services.IService.csproj", "{4A8E86C6-5097-473E-8D00-C9B4BD9A58FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetLive.Services.IService", "Services\MeetLive.Services.IService\MeetLive.Services.IService.csproj", "{4A8E86C6-5097-473E-8D00-C9B4BD9A58FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.Service", "Services\MeetLive.Services.Service\MeetLive.Services.Service.csproj", "{CFCDC19D-FB25-4AFA-9AA7-834A869CB294}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetLive.Services.Service", "Services\MeetLive.Services.Service\MeetLive.Services.Service.csproj", "{CFCDC19D-FB25-4AFA-9AA7-834A869CB294}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.Common", "Services\MeetLive.Services.Common\MeetLive.Services.Common.csproj", "{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetLive.Services.Common", "Services\MeetLive.Services.Common\MeetLive.Services.Common.csproj", "{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetLive.Services.WebSocket", "Services\MeetLive.Services.WebSocket\MeetLive.Services.WebSocket.csproj", "{5FED75C2-71F6-4D0D-96CC-5796544379F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FED75C2-71F6-4D0D-96CC-5796544379F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FED75C2-71F6-4D0D-96CC-5796544379F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FED75C2-71F6-4D0D-96CC-5796544379F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FED75C2-71F6-4D0D-96CC-5796544379F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +57,7 @@ Global
 		{4A8E86C6-5097-473E-8D00-C9B4BD9A58FD} = {96B3A39A-5C64-4D5C-8E44-BBAF9482D0A1}
 		{CFCDC19D-FB25-4AFA-9AA7-834A869CB294} = {96B3A39A-5C64-4D5C-8E44-BBAF9482D0A1}
 		{9EF0784B-C2CA-462B-8FE1-17116BAF2C0C} = {96B3A39A-5C64-4D5C-8E44-BBAF9482D0A1}
+		{5FED75C2-71F6-4D0D-96CC-5796544379F1} = {96B3A39A-5C64-4D5C-8E44-BBAF9482D0A1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {88BDB09E-6092-4880-BA8D-38BD6A920F89}

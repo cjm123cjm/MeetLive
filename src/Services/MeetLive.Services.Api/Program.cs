@@ -12,6 +12,7 @@ using MeetLive.Services.Service;
 using IGeekFan.AspNetCore.Knife4jUI;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using MeetLive.Services.WebSocket;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,7 +72,8 @@ builder.Services.AddOptions().Configure<ApiBehaviorOptions>(options =>
              .Select(t => $"{t.Key}:{string.Join(",", t.Value)}");
         return new OkObjectResult(new ResponseDto
         {
-            Code = 400,
+            Code = 200,
+            IsSuccess = false,
             Message = string.Join("\r\n", errorInfo)
         });
     };
@@ -98,6 +100,13 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("IsAdmin", "True");
     });
 });
+
+//Ìí¼Ówebsocket
+builder.Services.AddSingleton<ChannelContextUtils>();
+builder.Services.AddSingleton<HeartBeatHandler>();
+builder.Services.AddSingleton<NettyWebScoketServer>();
+builder.Services.AddSingleton<TokenValidationHandler>();
+builder.Services.AddSingleton<WebSocketHandler>();
 
 var app = builder.Build();
 

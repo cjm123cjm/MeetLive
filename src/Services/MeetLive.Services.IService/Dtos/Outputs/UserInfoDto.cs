@@ -17,10 +17,15 @@
         /// <summary>
         /// 0:女,1:男
         /// </summary>
-        public int Sex { get; set; }
+        public int? Sex { get; set; }
         /// <summary>
         /// 是否是超级管理员
         /// </summary>
         public bool IsAdmin { get; set; }
+        /// <summary>
+        /// 个人会议号
+        /// </summary>
+        public string? MeetingNo { get; set; }
+        public string? CurrentMeetingId { get; set; } = null;
     }
 }

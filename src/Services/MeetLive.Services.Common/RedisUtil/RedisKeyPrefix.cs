@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MeetLive.Services.Common.RedisUtil
+﻿namespace MeetLive.Services.Common.RedisUtil
 {
     /// <summary>
     /// 所有开发人员redis使用的Key前缀
@@ -39,9 +33,15 @@ namespace MeetLive.Services.Common.RedisUtil
         /// 登录注册验证码
         /// </summary>
         public const string VerifyCode = "VerifyCode_";
+
         /// <summary>
-        /// 邮箱验证码
+        /// 保存token对应的用户信息
         /// </summary>
-        public const string EmailVerifyCode = "EmailVerifyCode_";
+        public const string Redis_Key_Ws_Token = "Redis_Key_Ws_Token_";
+        /// <summary>
+        /// 保存用户id对应的token
+        /// </summary>
+        public const string Redis_Key_Ws_Token_UserId = "Redis_Key_Ws_Token_UserId_";
+
     }
 }

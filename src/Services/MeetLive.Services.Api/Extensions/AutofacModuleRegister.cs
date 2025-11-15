@@ -2,6 +2,7 @@
 using Autofac.Extras.DynamicProxy;
 using MeetLive.Services.Domain.IRepository;
 using MeetLive.Services.Domain.Repository;
+using MeetLive.Services.Domain.UnitOfWork;
 using MeetLive.Services.IService.Interfaces;
 using MeetLive.Services.Service.Implements;
 using System.Reflection;
@@ -16,6 +17,7 @@ namespace MeetLive.Services.Api.Extensions
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<JwtTokenGenerator>().As<IJwtTokenGenerator>();
+            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
 
             var aopType = new List<Type> { typeof(ServiceAop) };
             builder.RegisterType<ServiceAop>();

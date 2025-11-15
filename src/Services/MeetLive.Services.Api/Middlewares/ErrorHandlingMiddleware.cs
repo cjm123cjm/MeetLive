@@ -1,6 +1,7 @@
 ﻿using MeetLive.Services.IService.Dtos;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
+using MeetLive.Services.Domain.CustomerException;
 
 namespace MeetLive.Services.Api.Middlewares
 {
@@ -21,6 +22,12 @@ namespace MeetLive.Services.Api.Middlewares
             try
             {
                 await next(context);
+            }
+            catch (BusinessException ex)
+            {
+                var statusCode = ex.Code;
+
+                await HandleExceptionAsync(context, statusCode, ex.Message);
             }
             catch (Exception ex)
             {
@@ -73,7 +80,7 @@ namespace MeetLive.Services.Api.Middlewares
         {
             var result = JsonConvert.SerializeObject(
                 new ResponseDto
-                { Code = statusCode, Message = msg, IsSuccess = true },
+                { Code = statusCode, Message = msg, IsSuccess = false },
             new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()

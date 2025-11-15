@@ -7,15 +7,13 @@ namespace MeetLive.Services.Domain.Repository
 {
     public class BaseRepository<Entity> : IBaseRepository<Entity> where Entity : class
     {
-        protected readonly MeetLiveDbContext _context;
-        protected readonly DbSet<Entity> _dbSet;
-        protected readonly ILogger _logger;
+        public readonly MeetLiveDbContext _context;
+        public readonly DbSet<Entity> _dbSet;
 
-        protected BaseRepository(MeetLiveDbContext context, ILogger logger)
+        public BaseRepository(MeetLiveDbContext context)
         {
             _context = context;
             _dbSet = context.Set<Entity>();
-            _logger = logger;
         }
 
         /// <summary>

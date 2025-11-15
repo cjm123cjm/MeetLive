@@ -30,7 +30,7 @@
         /// </summary>
         public DateTime CreatedTime { get; set; } = DateTime.Now;
         /// <summary>
-        /// 状态
+        /// 状态,0:禁用,1:启用
         /// </summary>
         public int Status { get; set; }
         /// <summary>
