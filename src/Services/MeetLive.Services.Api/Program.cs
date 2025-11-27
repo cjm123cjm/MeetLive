@@ -13,6 +13,8 @@ using IGeekFan.AspNetCore.Knife4jUI;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using MeetLive.Services.WebSocket;
+using MeetLive.Services.WebSocket.Message;
+using DotNetCore.CAP;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,6 +109,55 @@ builder.Services.AddSingleton<HeartBeatHandler>();
 builder.Services.AddSingleton<NettyWebScoketServer>();
 builder.Services.AddSingleton<TokenValidationHandler>();
 builder.Services.AddSingleton<WebSocketHandler>();
+
+// 注册具体的实现类
+builder.Services.AddScoped<RedisMessageHandler>();
+builder.Services.AddScoped<CapRabbitMQMessageHandler>();
+builder.Services.AddScoped<IMessageHandler>(scope =>
+{
+    var configuration = scope.GetRequiredService<IConfiguration>();
+
+    string? messageChannel = configuration.GetValue<string>("MessageChannel");
+
+    return messageChannel?.ToLower() switch
+    {
+        "rabbitmq" => scope.GetRequiredService<CapRabbitMQMessageHandler>(),
+        "redis" => scope.GetRequiredService<RedisMessageHandler>(),
+        _ => throw new InvalidOperationException($"不支持的消息通道: {messageChannel}")
+    };
+});
+
+// 注册 Hosted Service
+builder.Services.AddHostedService<MessageHostedService>();
+
+//配置RabbitMq
+var rabbitConfig = builder.Configuration.GetSection("RabbitMQ");
+builder.Services.Configure<RabbitMQOptions>(rabbitConfig);
+var rabbitOptions = rabbitConfig.Get<RabbitMQOptions>()!;
+builder.Services.AddCap(setup =>
+{
+    setup.UseMySql(builder.Configuration.GetConnectionString("mysql") ?? string.Empty);
+    setup.UseEntityFramework<MeetLiveDbContext>();
+    setup.UseRabbitMQ(mq =>
+    {
+        mq.HostName = rabbitOptions.HostName;
+        mq.VirtualHost = rabbitOptions.VirtualHost;
+        mq.UserName = rabbitOptions.UserName;
+        mq.Password = rabbitOptions.Password;
+        mq.Port = rabbitOptions.Port;
+
+        // 交换机配置 - 使用 Fanout
+        mq.ExchangeName = "meetlive.cap.fanout.exchange";
+    });
+    //仪表盘默认的访问地址是：http://localhost:xxx/cap，你可以在d.MatchPath配置项中修改cap路径后缀为其他的名字。
+    setup.UseDashboard();// 注册仪表盘
+
+    //重试
+    setup.FailedRetryCount = 3;
+    //间隔10s
+    setup.FailedRetryInterval = 10;
+});
+
 
 var app = builder.Build();
 

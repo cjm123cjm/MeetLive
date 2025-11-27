@@ -7,6 +7,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.2.1" />
+		<PackageReference Include="DotNetCore.CAP.MySql" Version="7.2.1" />
+		<PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.2.1" />
 		<PackageReference Include="DotNetty.Buffers" Version="0.7.6" />
 		<PackageReference Include="DotNetty.Codecs" Version="0.7.6" />
 		<PackageReference Include="DotNetty.Codecs.Http" Version="0.7.6" />

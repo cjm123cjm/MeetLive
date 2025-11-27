@@ -1,4 +1,6 @@
-﻿namespace MeetLive.Services.IService.Dtos
+﻿using MeetLive.Services.IService.Enums;
+
+namespace MeetLive.Services.IService.Dtos
 {
     /// <summary>
     /// 发送消息Dto
@@ -17,7 +19,7 @@
         /// <summary>
         /// 消息类型
         /// </summary>
-        public int MessageType { get; set; }
+        public MessageTypeEnum MessageType { get; set; }
 
         /// <summary>
         /// 发送人id

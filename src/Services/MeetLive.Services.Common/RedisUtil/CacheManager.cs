@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
+using System.Drawing;
 
 namespace MeetLive.Services.Common.RedisUtil
 {
@@ -243,6 +245,37 @@ namespace MeetLive.Services.Common.RedisUtil
         public static bool KeyExpire(string key, TimeSpan? expiry = null)
         {
             return RedisClient.KeyExpire(key, expiry);
+        }
+
+        /// <summary>
+        /// Redis发布订阅  订阅
+        /// </summary>
+        /// <param name="subChannel">频道</param>
+        /// <param name="handler">处理机制</param>
+        public static void Subscribe<T>(string subChannel, Action<object, T>? handler = null)
+        {
+            RedisClient.Subscribe<T>(subChannel, handler);
+        }
+
+        /// <summary>
+        /// Redis发布订阅  发布
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="channel">频道</param>
+        /// <param name="msg">发布的数据</param>
+        /// <returns>操作结果</returns>
+        public static long Publish<T>(string channel, T msg)
+        {
+            return RedisClient.Publish<T>(channel, msg);
+        }
+
+        /// <summary>
+        /// Redis发布订阅  取消订阅
+        /// </summary>
+        /// <param name="channel"></param>
+        public static void Unsubscribe(string channel)
+        {
+            RedisClient.Unsubscribe(channel);
         }
     }
 }

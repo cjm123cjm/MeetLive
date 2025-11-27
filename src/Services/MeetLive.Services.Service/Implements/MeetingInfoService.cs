@@ -153,7 +153,7 @@ namespace MeetLive.Services.Service.Implements
             };
             MessageSendDto<object> messageSendDto = new MessageSendDto<object>
             {
-                MessageType = (int)MessageTypeEnum.ADD_MEETING_ROOM,
+                MessageType = MessageTypeEnum.ADD_MEETING_ROOM,
                 MeetingId = meetingInfo.MeetingId.ToString(),
                 MessageSendType = MessageSendTypeEnum.GROUP,
                 MessageContent = meetingJoinDto

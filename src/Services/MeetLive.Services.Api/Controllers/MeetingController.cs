@@ -2,6 +2,7 @@
 using MeetLive.Services.IService.Dtos.Inputs;
 using MeetLive.Services.IService.Interfaces;
 using MeetLive.Services.WebSocket;
+using MeetLive.Services.WebSocket.Message;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,13 +15,16 @@ namespace MeetLive.Services.Api.Controllers
     {
         private readonly IMeetingInfoService _meetingInfoService;
         private readonly ChannelContextUtils _channelContextUtils;
+        private readonly IMessageHandler _messageHandler;
 
         public MeetingController(
-            IMeetingInfoService meetingInfoService, 
-            ChannelContextUtils channelContextUtils)
+            IMeetingInfoService meetingInfoService,
+            ChannelContextUtils channelContextUtils,
+            IMessageHandler messageHandler)
         {
             _meetingInfoService = meetingInfoService;
             _channelContextUtils = channelContextUtils;
+            _messageHandler = messageHandler;
         }
 
         /// <summary>
@@ -61,7 +65,8 @@ namespace MeetLive.Services.Api.Controllers
             _channelContextUtils.AddJoinMeetingRoom(data.MeetingId!, LoginUserId.ToString());
 
             //发送ws消息
-            _channelContextUtils.SendMessage(data);
+            _messageHandler.SendMessage(data);
+            //_channelContextUtils.SendMessage(data);
 
             return new ResponseDto();
         }
