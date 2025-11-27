@@ -11,6 +11,8 @@ namespace MeetLive.Services.Domain
         }
 
         public DbSet<UserInfo> UserInfos { get; set; }
+        public DbSet<MeetingInfo> MeetingInfos { get; set; }
+        public DbSet<MeetingMember> MeetingMembers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserInfo>(t =>

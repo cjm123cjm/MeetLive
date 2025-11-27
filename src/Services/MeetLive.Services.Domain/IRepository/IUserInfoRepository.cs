@@ -18,5 +18,13 @@ namespace MeetLive.Services.Domain.IRepository
         /// <param name="time"></param>
         /// <returns></returns>
         Task UpdateLastLoginTimeAsync(long userId, DateTime time);
+
+        /// <summary>
+        /// 更新最后离开时间
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        Task UpdateLastOffTimeAsync(long userId, DateTime time);
     }
 }

@@ -30,5 +30,17 @@ namespace MeetLive.Services.Domain.Repository
             var sql = "UPDATE UserInfos SET LastLoginTime = {0} WHERE UserId = {1}";
             await _context.Database.ExecuteSqlRawAsync(sql, time, userId);
         }
+
+        /// <summary>
+        /// 更新最后离开时间
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public async Task UpdateLastOffTimeAsync(long userId, DateTime time)
+        {
+            var sql = "UPDATE UserInfos SET LastOffTime = {0} WHERE UserId = {1}";
+            await _context.Database.ExecuteSqlRawAsync(sql, time, userId);
+        }
     }
 }

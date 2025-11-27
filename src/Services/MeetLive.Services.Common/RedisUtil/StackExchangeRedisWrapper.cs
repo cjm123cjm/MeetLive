@@ -356,6 +356,22 @@ namespace MeetLive.Services.Common.RedisUtil
             });
         }
 
+        /// <summary>
+        /// 从hash表获取指定key下的所有值
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="key">键</param>
+        /// <returns>所有值的集合</returns>
+        public IEnumerable<T> HashValues<T>(string key)
+        {
+            key = GetRealStoreKey(key);
+            return Do(db =>
+            {
+                var values = db.HashValues(key);
+                return values.Select(v => DeserializeObject<T>(v));
+            });
+        }
+
 
 
         /// <summary>

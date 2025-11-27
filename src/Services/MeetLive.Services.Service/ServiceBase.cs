@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MeetLive.Services.Common.Snowflake;
+using MeetLive.Services.IService.Dtos.Outputs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,9 @@ namespace MeetLive.Services.Service
         protected string LoginUserName { get; set; }
         protected string LoginUserEmail { get; set; }
         public bool IsAdmin { get; set; }
+        public int? Sex { get; set; }
+        public string? MeetingNo { get; set; }
+        public string? CurrentMeetingId { get; set; }
         protected IMapper ObjectMapper { get; set; }
         protected string ServerUrl { get; set; }
         protected IdWorker SnowIdWorker { get; set; }
@@ -27,6 +31,12 @@ namespace MeetLive.Services.Service
                     IsAdmin = Convert.ToBoolean(httpContext.HttpContext.User.Claims.First(t => t.Type == "IsAdmin").Value);
                     LoginUserName = httpContext.HttpContext.User.Claims.First(t => t.Type == "NickName").Value.ToString();
                     LoginUserEmail = httpContext.HttpContext.User.Claims.First(t => t.Type == "Email").Value.ToString();
+
+                    MeetingNo = httpContext.HttpContext.User.Claims.First(t => t.Type == "MeetingNo").Value?.ToString();
+                    CurrentMeetingId = httpContext.HttpContext.User.Claims.First(t => t.Type == "CurrentMeetingId").Value?.ToString();
+
+                    var sex = httpContext.HttpContext.User.Claims.First(t => t.Type == "Sex").Value;
+                    Sex = sex == null ? null : Convert.ToInt32(sex);
                 }
                 ServerUrl = $"{httpContext.HttpContext.Request.Scheme}://{httpContext.HttpContext.Request.Host}";
             }
@@ -34,6 +44,24 @@ namespace MeetLive.Services.Service
             ObjectMapper = LocationStorage.Instance.GetService<IMapper>()!;
 
             SnowIdWorker = SnowflakeUtil.CreateIdWorker();
+        }
+
+        /// <summary>
+        /// 获取用户信息
+        /// </summary>
+        /// <returns></returns>
+        public UserInfoDto GetUserInfoDto()
+        {
+            return new UserInfoDto
+            {
+                UserId = LoginUserId,
+                Email = LoginUserEmail,
+                NickName = LoginUserName,
+                Sex = Sex,
+                IsAdmin = IsAdmin,
+                MeetingNo = MeetingNo,
+                CurrentMeetingId = CurrentMeetingId
+            };
         }
     }
 }

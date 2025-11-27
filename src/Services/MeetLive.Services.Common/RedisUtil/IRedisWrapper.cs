@@ -110,7 +110,13 @@
         /// <returns>值</returns>
         T HashGet<T>(string key, string hashField);
 
-
+        /// <summary>
+        /// 从hash表获取指定key下的所有值
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="key">键</param>
+        /// <returns>所有值的集合</returns>
+        IEnumerable<T> HashValues<T>(string key);
 
         /// <summary>
         /// 获取hashkey所有Redis key

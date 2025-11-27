@@ -3,7 +3,6 @@ using MeetLive.Services.Common.RedisUtil;
 using MeetLive.Services.IService.Dtos;
 using MeetLive.Services.IService.Dtos.Inputs;
 using MeetLive.Services.IService.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetLive.Services.Api.Controllers

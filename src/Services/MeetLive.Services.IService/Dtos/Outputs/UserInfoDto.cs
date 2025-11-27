@@ -26,6 +26,9 @@
         /// 个人会议号
         /// </summary>
         public string? MeetingNo { get; set; }
+        /// <summary>
+        /// 当前正在参加的会议号
+        /// </summary>
         public string? CurrentMeetingId { get; set; } = null;
     }
 }

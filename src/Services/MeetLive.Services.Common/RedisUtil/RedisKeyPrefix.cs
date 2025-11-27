@@ -43,5 +43,10 @@
         /// </summary>
         public const string Redis_Key_Ws_Token_UserId = "Redis_Key_Ws_Token_UserId_";
 
+        /// <summary>
+        /// 会议房间
+        /// </summary>
+        public const string Redis_Key_Meeting_Root = "Redis_Key_Meeting_Root_";
+
     }
 }

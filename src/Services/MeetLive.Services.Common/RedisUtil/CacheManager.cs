@@ -63,6 +63,17 @@ namespace MeetLive.Services.Common.RedisUtil
         }
 
         /// <summary>
+        /// 从hash表获取指定key下的所有值
+        /// </summary>
+        /// <typeparam name="T">对象类型</typeparam>
+        /// <param name="key">键</param>
+        /// <returns>所有值的集合</returns>
+        public static IEnumerable<T> HashValues<T>(string key)
+        {
+            return RedisClient.HashValues<T>(key);
+        }
+
+        /// <summary>
         /// 判断某个数据是否已经被缓存
         /// </summary>
         /// <param name="key">key</param>
