@@ -47,9 +47,9 @@ namespace MeetLive.Services.Api.Controllers
         [HttpPost]
         public async Task<ResponseDto> QuickMeeting(QuickMeetingInput meetingInput)
         {
-            var data = await _meetingInfoService.QuickMeetingAsync(meetingInput);
+            await _meetingInfoService.QuickMeetingAsync(meetingInput);
 
-            return new ResponseDto(data);
+            return new ResponseDto();
         }
 
         /// <summary>
