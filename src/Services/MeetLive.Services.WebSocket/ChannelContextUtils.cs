@@ -7,6 +7,8 @@ using MeetLive.Services.Common.RedisUtil;
 using MeetLive.Services.Domain.IRepository;
 using MeetLive.Services.IService.Dtos;
 using MeetLive.Services.IService.Dtos.Outputs;
+using MeetLive.Services.IService.Enums;
+using MeetLive.Services.Service;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
@@ -127,6 +129,34 @@ namespace MeetLive.Services.WebSocket
                 TextWebSocketFrame messageText = new TextWebSocketFrame(JsonConvert.SerializeObject(messageSendDto));
                 channelGroup.WriteAndFlushAsync(messageText);
             }
+
+            //退出会议
+            if (messageSendDto.MessageType == MessageTypeEnum.EXIT_MEETING_ROOM)
+            {
+                var exitDto = messageSendDto.MessageContent as MeetingExitDto;
+                if (exitDto != null)
+                {
+                    RemoveContextFromGroup(exitDto.ExitUserId.ToString(), messageSendDto.MeetingId);
+
+                    var allMember = RedisComponent.GetMeetingMemberList(messageSendDto.MeetingId);
+                    int onLiveCount = allMember.Where(t => t.Status == 1).Count();
+                    if (onLiveCount == 0)
+                    {
+                        RemoveContextGroup(messageSendDto.MeetingId);
+                    }
+                }
+                return;
+            }
+            //结束会议
+            if (messageSendDto.MessageType == MessageTypeEnum.FINIS_MEETING)
+            {
+                var allMember = RedisComponent.GetMeetingMemberList(messageSendDto.MeetingId);
+                foreach (var item in allMember)
+                {
+                    RemoveContextFromGroup(item.UserId.ToString(), messageSendDto.MeetingId);
+                }
+                RemoveContextGroup(messageSendDto.MeetingId);
+            }
         }
 
         /// <summary>
@@ -166,11 +196,46 @@ namespace MeetLive.Services.WebSocket
                 return;
             }
 
-            USER_CONTEXT_MAP.Remove(userId,out userChannel);
+            USER_CONTEXT_MAP.Remove(userId, out userChannel);
             if (userChannel != null)
             {
                 userChannel.CloseAsync();
             }
+        }
+
+        /// <summary>
+        /// 移除群组里的人
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="meetingId"></param>
+        private void RemoveContextFromGroup(string userId, string meetingId)
+        {
+            if (!USER_CONTEXT_MAP.ContainsKey(userId)) return;
+
+            var context = USER_CONTEXT_MAP[userId];
+            if (context == null)
+            {
+                return;
+            }
+
+            if (!MEETING_ROOM_CONTEXT_MAP.ContainsKey(meetingId)) return;
+
+            var group = MEETING_ROOM_CONTEXT_MAP[meetingId];
+            if (group != null)
+            {
+                group.Remove(context);
+            }
+        }
+
+        /// <summary>
+        /// 移除群组
+        /// </summary>
+        /// <param name="meetingId"></param>
+        private void RemoveContextGroup(string meetingId)
+        {
+            if (!MEETING_ROOM_CONTEXT_MAP.ContainsKey(meetingId)) return;
+
+            MEETING_ROOM_CONTEXT_MAP.Remove(meetingId, out _);
         }
     }
 }

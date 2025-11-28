@@ -36,6 +36,16 @@ namespace MeetLive.Services.Common.RedisUtil
             return RedisClient.HashDelete(key, hashField);
         }
 
+        /// <summary>
+        /// 移除key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static bool HashKeyDelete(string key)
+        {
+            return RedisClient.HashKeyDelete(key);
+        }
+
 
         /// <summary>
         /// 存储数据到hash表

@@ -32,8 +32,9 @@ namespace MeetLive.Services.Service
                     LoginUserName = httpContext.HttpContext.User.Claims.First(t => t.Type == "NickName").Value.ToString();
                     LoginUserEmail = httpContext.HttpContext.User.Claims.First(t => t.Type == "Email").Value.ToString();
 
-                    MeetingNo = httpContext.HttpContext.User.Claims.First(t => t.Type == "MeetingNo").Value?.ToString();
-                    CurrentMeetingId = httpContext.HttpContext.User.Claims.First(t => t.Type == "CurrentMeetingId").Value?.ToString();
+                    var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString())!;
+                    MeetingNo = userDto.MeetingNo;
+                    CurrentMeetingId = userDto.CurrentMeetingId;
 
                     var sex = httpContext.HttpContext.User.Claims.First(t => t.Type == "Sex").Value;
                     Sex = sex == null ? null : Convert.ToInt32(sex);

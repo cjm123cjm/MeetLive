@@ -327,6 +327,17 @@ namespace MeetLive.Services.Common.RedisUtil
             return Do(db => db.HashDelete(key, hashField));
         }
 
+        /// <summary>
+        /// 移除指定的 key
+        /// </summary>
+        /// <param name="key">要移除的键</param>
+        /// <returns>操作结果（true表示移除成功）</returns>
+        public bool HashKeyDelete(string key)
+        {
+            key = GetRealStoreKey(key);
+            return Do(db => db.KeyDelete(key));
+        }
+
         ///// <summary>
         ///// 移除hash中的多个值
         ///// </summary>

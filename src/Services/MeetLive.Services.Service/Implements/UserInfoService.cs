@@ -1,15 +1,12 @@
 ﻿using MeetLive.Services.Common;
 using MeetLive.Services.Common.Captcha;
-using MeetLive.Services.Common.RedisUtil;
 using MeetLive.Services.Domain.CustomerException;
 using MeetLive.Services.Domain.Entities;
 using MeetLive.Services.Domain.IRepository;
-using MeetLive.Services.Domain.Repository;
 using MeetLive.Services.Domain.UnitOfWork;
 using MeetLive.Services.IService.Dtos.Inputs;
 using MeetLive.Services.IService.Dtos.Outputs;
 using MeetLive.Services.IService.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace MeetLive.Services.Service.Implements
@@ -95,8 +92,7 @@ namespace MeetLive.Services.Service.Implements
             var token = _jwtTokenGenerator.GenerateToken(userDto);
 
             //数据存到redis里
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token + token, userDto, TimeSpan.FromDays(1));
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userDto.UserId, userDto, TimeSpan.FromDays(1));
+            RedisComponent.SetUserInfo(userDto, token);
 
             return new LoginResponseDto
             {

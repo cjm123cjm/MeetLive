@@ -29,8 +29,6 @@ namespace MeetLive.Services.Service.Implements
                 new Claim("Email",userDto.Email),
                 new Claim("UserId",userDto.UserId.ToString()),
                 new Claim("IsAdmin",userDto.IsAdmin.ToString()),
-                new Claim("MeetingNo",userDto.MeetingNo?.ToString()),
-                new Claim("CurrentMeetingId",userDto.CurrentMeetingId?.ToString()),
             };
 
             var tokenDescript = new SecurityTokenDescriptor

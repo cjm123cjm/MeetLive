@@ -102,6 +102,13 @@
         bool HashDelete(string key, string hashField);
 
         /// <summary>
+        /// 移除key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool HashKeyDelete(string key);
+
+        /// <summary>
         /// 从hash表获取数据
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>

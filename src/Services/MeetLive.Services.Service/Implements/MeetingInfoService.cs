@@ -75,7 +75,7 @@ namespace MeetLive.Services.Service.Implements
         /// </summary>
         /// <param name="meetingInput"></param>
         /// <returns></returns>
-        public async Task<string> QuickMeetingAsync(QuickMeetingInput meetingInput)
+        public async Task QuickMeetingAsync(QuickMeetingInput meetingInput)
         {
             if (!string.IsNullOrWhiteSpace(CurrentMeetingId))
             {
@@ -99,15 +99,11 @@ namespace MeetLive.Services.Service.Implements
             CurrentMeetingId = meetingInfo.MeetingId.ToString();
 
             var userDto = GetUserInfoDto();
-            var token = _jwtTokenGenerator.GenerateToken(userDto);
 
             //数据存到redis里
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token + token, userDto, TimeSpan.FromDays(1));
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userDto.UserId, userDto, TimeSpan.FromDays(1));
+            RedisComponent.UpdateUserInfoByUserId(userDto);
 
             await _unitOfWork.SaveChangesAsync();
-
-            return token;
         }
 
         /// <summary>
@@ -148,8 +144,8 @@ namespace MeetLive.Services.Service.Implements
             //发送ws消息
             MeetingJoinDto meetingJoinDto = new MeetingJoinDto
             {
-                NewMember = CacheManager.HashGet<MeetingMemberDto>(RedisKeyPrefix.Redis_Key_Meeting_Root + meetingInfo.MeetingId, LoginUserId.ToString()),
-                MeetingMemberList = CacheManager.HashValues<MeetingMemberDto>(RedisKeyPrefix.Redis_Key_Meeting_Root + meetingInfo.MeetingId).ToList()
+                NewMember = RedisComponent.GetMeetingMember(meetingInfo.MeetingId.ToString(), LoginUserId.ToString()),
+                MeetingMemberList = RedisComponent.GetMeetingMemberList(meetingInfo.MeetingId.ToString())
             };
             MessageSendDto<object> messageSendDto = new MessageSendDto<object>
             {
@@ -223,7 +219,7 @@ namespace MeetLive.Services.Service.Implements
                 VideoOpen = videoOpen
             };
 
-            CacheManager.HashSet(RedisKeyPrefix.Redis_Key_Meeting_Root + meetingId.ToString(), userId.ToString(), meetingMemberDto);
+            RedisComponent.SetMeetingMember(meetingId.ToString(), userId.ToString(), meetingMemberDto);
         }
 
         /// <summary>
@@ -275,10 +271,203 @@ namespace MeetLive.Services.Service.Implements
             var token = _jwtTokenGenerator.GenerateToken(userDto);
 
             //数据存到redis里
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token + token, userDto, TimeSpan.FromDays(1));
-            CacheManager.Set(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userDto.UserId, userDto, TimeSpan.FromDays(1));
+            RedisComponent.SetUserInfo(userDto, token);
 
             return token;
+        }
+
+        /// <summary>
+        /// 退出会议
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <returns></returns>
+        public async Task<MessageSendDto<object>?> ExitMeetingAsync(UserInfoDto userDto, int type)
+        {
+            if (string.IsNullOrWhiteSpace(userDto.CurrentMeetingId)) return null;
+
+            string meetingId = userDto.CurrentMeetingId;
+            var memberDto = RedisComponent.GetMeetingMember(meetingId, userDto.UserId.ToString());
+            if (memberDto != null)
+            {
+                memberDto.Status = type;
+                RedisComponent.SetMeetingMember(meetingId, userDto.UserId.ToString(), memberDto);
+            }
+            else
+            {
+                //还没参加就退出了
+                userDto.CurrentMeetingId = null;
+
+                //数据存到redis里
+                RedisComponent.UpdateUserInfoByUserId(userDto);
+
+                return null;
+            }
+
+            userDto.CurrentMeetingId = null;
+
+            //数据存到redis里
+            RedisComponent.UpdateUserInfoByUserId(userDto);
+
+            //设置发送消息体
+            var members = RedisComponent.GetMeetingMemberList(meetingId);
+            MeetingExitDto meetingExitDto = new MeetingExitDto
+            {
+                ExitUserId = LoginUserId,
+                MeetingMemberList = members,
+                ExitStatus = type
+            };
+            MessageSendDto<object> messageSendDto = new MessageSendDto<object>
+            {
+                MessageType = MessageTypeEnum.EXIT_MEETING_ROOM,
+                MessageContent = meetingExitDto,
+                MeetingId = meetingId,
+                MessageSendType = MessageSendTypeEnum.GROUP
+            };
+
+            //会议正常人员
+            int onLiveCount = members.Where(t => t.Status == 1).Count();
+            if (onLiveCount == 0)
+            {
+                //结束会议
+                await FinishMeetingAsync(meetingId);
+            }
+            else
+            {
+                //被踢出会议、被拉黑
+                if (type == 3 || type == 4)
+                {
+                    var currentMember = await _meetMemberRepository.QueryWhere(t => t.MeetingId.ToString() == meetingId && t.UserId == userDto.UserId, true).FirstOrDefaultAsync();
+                    if (currentMember != null)
+                    {
+                        currentMember.Status = type;
+
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                }
+            }
+
+            return messageSendDto;
+        }
+
+        /// <summary>
+        /// 强制退出
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public async Task<MessageSendDto<object>?> ForceExitMeetingAsync(int type, string userId)
+        {
+            var meetInfo = await _meetInfoRepository.QueryWhere(t => t.MeetingId.ToString() == CurrentMeetingId).FirstOrDefaultAsync();
+            if (meetInfo == null || meetInfo.CreatedUserId != LoginUserId)
+            {
+                throw new BusinessException("参数错误");
+            }
+            UserInfoDto? userDto = RedisComponent.GetUserInfoByUserId(userId);
+            if (userDto == null)
+            {
+                throw new BusinessException("参数错误");
+            }
+
+            return await ExitMeetingAsync(userDto, type);
+        }
+
+        /// <summary>
+        /// 获取正在进行的会议
+        /// </summary>
+        /// <returns></returns>
+        public async Task<MeetingInfoDto> GetCurrentMeetingAsync()
+        {
+            var meetingInfo = await _meetInfoRepository.GetByIdAsync(Convert.ToInt64(CurrentMeetingId));
+
+            return ObjectMapper.Map<MeetingInfoDto>(meetingInfo);
+        }
+
+        /// <summary>
+        /// 结束会议
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <returns></returns>
+        /// <exception cref="BusinessException"></exception>
+        public async Task<MessageSendDto<object>> FinishMeetingAsync(string meetingId)
+        {
+            if (string.IsNullOrWhiteSpace(meetingId))
+            {
+                throw new BusinessException("参数错误");
+            }
+
+            MeetingInfo? meeting = await _meetInfoRepository.GetByIdAsync(Convert.ToInt64(meetingId));
+            if (meeting == null)
+            {
+                throw new BusinessException("参数错误");
+            }
+            if (meeting.CreatedUserId != LoginUserId && !IsAdmin)
+            {
+                throw new BusinessException("没有权限");
+            }
+
+            meeting.Status = 0;
+            meeting.EndTime = DateTime.Now;
+
+            //更新成员
+            var meetmerber = await _meetMemberRepository.QueryWhere(t => t.MeetingId == meeting.MeetingId, true).ToListAsync();
+            foreach (var item in meetmerber)
+            {
+                item.MeetingStatus = 0;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            //更新预约会议状态
+
+            var meetingMembers = RedisComponent.GetMeetingMemberList(meeting.MeetingId.ToString());
+            foreach (var item in meetingMembers)
+            {
+                var userDto = RedisComponent.GetUserInfoByUserId(item.UserId.ToString());
+                if (userDto != null)
+                {
+                    userDto.CurrentMeetingId = "";
+                    RedisComponent.UpdateUserInfoByUserId(userDto);
+                }
+            }
+            RedisComponent.RemoveAllMeetingMember(meetingId);
+
+            //发送消息
+            MessageSendDto<object> messageSendDto = new MessageSendDto<object>
+            {
+                MessageSendType = MessageSendTypeEnum.GROUP,
+                MessageType = MessageTypeEnum.FINIS_MEETING,
+                MeetingId = meeting.MeetingId.ToString(),
+            };
+
+            return messageSendDto;
+        }
+
+        /// <summary>
+        /// 删除会议记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task DeleteMeetingRecordAsync(string meetingId)
+        {
+            var memberRecord = await _meetMemberRepository.QueryWhere(t => t.MeetingId.ToString() == meetingId && t.UserId == LoginUserId, true).ToListAsync();
+
+            foreach (var item in memberRecord)
+            {
+                item.Status = 0;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// 加载参加会议的成员
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <returns></returns>
+        public async Task<List<MeetingMemberDto>> LoadMeetingMemberAsync(string meetingId)
+        {
+            var data = await _meetMemberRepository.QueryWhere(t => t.MeetingId.ToString() == meetingId).ToListAsync();
+
+            return ObjectMapper.Map<List<MeetingMemberDto>>(data);
         }
     }
 }

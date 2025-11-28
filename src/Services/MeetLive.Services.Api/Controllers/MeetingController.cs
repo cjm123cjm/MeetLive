@@ -1,6 +1,7 @@
 ﻿using MeetLive.Services.IService.Dtos;
 using MeetLive.Services.IService.Dtos.Inputs;
 using MeetLive.Services.IService.Interfaces;
+using MeetLive.Services.Service;
 using MeetLive.Services.WebSocket;
 using MeetLive.Services.WebSocket.Message;
 using Microsoft.AspNetCore.Authorization;
@@ -82,6 +83,142 @@ namespace MeetLive.Services.Api.Controllers
             var data = await _meetingInfoService.PreJoinMeetingAsync(meetingInput);
 
             return new ResponseDto(data);
+        }
+
+        /// <summary>
+        /// 退出会议
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> ExitMeeting()
+        {
+            var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString());
+            if (userDto == null)
+            {
+                return new ResponseDto(false, "参数错误");
+            }
+            var data = await _meetingInfoService.ExitMeetingAsync(userDto, 2);
+
+            if (data != null)
+            {
+                //发送消息
+                _messageHandler.SendMessage(data);
+            }
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 踢出会议
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> KickOutMeeting(string userId)
+        {
+            var data = await _meetingInfoService.ForceExitMeetingAsync(3, userId);
+
+            if (data != null)
+            {
+                //发送消息
+                _messageHandler.SendMessage(data);
+            }
+
+            return new ResponseDto(data);
+        }
+
+        /// <summary>
+        /// 被拉黑
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> BlackMeeting(string userId)
+        {
+            var data = await _meetingInfoService.ForceExitMeetingAsync(4, userId);
+
+            if (data != null)
+            {
+                //发送消息
+                _messageHandler.SendMessage(data);
+            }
+
+            return new ResponseDto(data);
+        }
+
+        /// <summary>
+        /// 获取当前正在进行的会议
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ResponseDto> GetCurrentMeeting()
+        {
+            var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString());
+            if (userDto == null || string.IsNullOrWhiteSpace(userDto.CurrentMeetingId))
+            {
+                return new ResponseDto();
+            }
+
+            var meeting = await _meetingInfoService.GetCurrentMeetingAsync();
+            if (meeting == null || meeting.Status == 0)
+            {
+                return new ResponseDto();
+            }
+
+            return new ResponseDto(meeting);
+        }
+
+        /// <summary>
+        /// 结束会议
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> FinishMeeting()
+        {
+            var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString());
+            if (userDto == null || string.IsNullOrWhiteSpace(userDto.CurrentMeetingId))
+            {
+                return new ResponseDto();
+            }
+
+            var data = await _meetingInfoService.FinishMeetingAsync(userDto.CurrentMeetingId);
+
+            //发送消息
+            _messageHandler.SendMessage(data);
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 删除会议记录
+        /// </summary>
+        /// <param name="meetingId">会议id</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> DeleteMeetingRecord(string meetingId)
+        {
+            await _meetingInfoService.DeleteMeetingRecordAsync(meetingId);
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 加载会议成员
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<ResponseDto> LoadMeetingMember(string meetingId)
+        {
+            var data = await _meetingInfoService.LoadMeetingMemberAsync(meetingId);
+            if (data.Any(t => t.UserId == LoginUserId))
+            {
+                return new ResponseDto(data);
+            }
+
+            return new ResponseDto();
         }
     }
 }

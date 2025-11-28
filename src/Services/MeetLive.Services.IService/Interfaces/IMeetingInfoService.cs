@@ -18,7 +18,7 @@ namespace MeetLive.Services.IService.Interfaces
         /// </summary>
         /// <param name="meetingInput"></param>
         /// <returns></returns>
-        Task<string> QuickMeetingAsync(QuickMeetingInput meetingInput);
+        Task QuickMeetingAsync(QuickMeetingInput meetingInput);
 
         /// <summary>
         /// 加入会议
@@ -33,5 +33,47 @@ namespace MeetLive.Services.IService.Interfaces
         /// <param name="meetingInput"></param>
         /// <returns></returns>
         Task<string> PreJoinMeetingAsync(PreJoinMeetingInput meetingInput);
+
+        /// <summary>
+        /// 退出会议
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <returns></returns>
+        Task<MessageSendDto<object>?> ExitMeetingAsync(UserInfoDto userDto, int type);
+
+        /// <summary>
+        /// 被踢出会议/被拉黑
+        /// </summary>
+        /// <param name="type">2-退出会议,3-被踢出会议,4-被拉黑</param>
+        /// <param name="userId">被提出的用户id</param>
+        /// <returns></returns>
+        Task<MessageSendDto<object>?> ForceExitMeetingAsync(int type, string userId);
+
+        /// <summary>
+        /// 获取正在进行的会议
+        /// </summary>
+        /// <returns></returns>
+        Task<MeetingInfoDto> GetCurrentMeetingAsync();
+
+        /// <summary>
+        /// 结束会议
+        /// </summary>
+        /// <param name="meetingId">会议id</param>
+        /// <returns></returns>
+        Task<MessageSendDto<object>> FinishMeetingAsync(string meetingId);
+
+        /// <summary>
+        /// 删除会议记录
+        /// </summary>
+        /// <param name="meetingId">会议id</param>
+        /// <returns></returns>
+        Task DeleteMeetingRecordAsync(string meetingId);
+
+        /// <summary>
+        /// 加载参加会议的成员
+        /// </summary>
+        /// <param name="meetingId">会议id</param>
+        /// <returns></returns>
+        Task<List<MeetingMemberDto>> LoadMeetingMemberAsync(string meetingId);  
     }
 }
