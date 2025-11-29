@@ -20,17 +20,23 @@ namespace MeetLive.Services.Service.Implements
         private readonly IMeetingMemberRepository _meetMemberRepository;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMeetingReserveRepository _reserveRepository;
+        private readonly IMeetingReserveMemberRepository _meetingReserveMemberRepository;
 
         public MeetingInfoService(
             IMeetingInfoRepository meetInfoRepository,
             IMeetingMemberRepository meetMemberRepository,
             IJwtTokenGenerator jwtTokenGenerator,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IMeetingReserveRepository reserveRepository,
+            IMeetingReserveMemberRepository meetingReserveMemberRepository)
         {
             _meetInfoRepository = meetInfoRepository;
             _meetMemberRepository = meetMemberRepository;
             _jwtTokenGenerator = jwtTokenGenerator;
             _unitOfWork = unitOfWork;
+            _reserveRepository = reserveRepository;
+            _meetingReserveMemberRepository = meetingReserveMemberRepository;
         }
 
         /// <summary>
@@ -227,7 +233,7 @@ namespace MeetLive.Services.Service.Implements
         /// </summary>
         /// <param name="meetingInput"></param>
         /// <returns></returns>
-        public async Task<string> PreJoinMeetingAsync(PreJoinMeetingInput meetingInput)
+        public async Task PreJoinMeetingAsync(PreJoinMeetingInput meetingInput)
         {
             var meetingInfo = await _meetInfoRepository
                                     .QueryWhere(t => t.MeetingNo == meetingInput.MeetingNo)
@@ -268,12 +274,9 @@ namespace MeetLive.Services.Service.Implements
             LoginUserName = meetingInput.NickName;
 
             var userDto = GetUserInfoDto();
-            var token = _jwtTokenGenerator.GenerateToken(userDto);
 
             //数据存到redis里
-            RedisComponent.SetUserInfo(userDto, token);
-
-            return token;
+            RedisComponent.UpdateUserInfoByUserId(userDto);
         }
 
         /// <summary>
@@ -328,8 +331,21 @@ namespace MeetLive.Services.Service.Implements
             int onLiveCount = members.Where(t => t.Status == 1).Count();
             if (onLiveCount == 0)
             {
-                //结束会议
-                await FinishMeetingAsync(meetingId);
+                //如果是预约会议,没有到会议时间结束时间就不能结束会议
+                var reserve = await _reserveRepository.GetByIdAsync(Convert.ToInt64(meetingId));
+                if (reserve != null)
+                {
+                    if (DateTime.Now > reserve.StartTime.AddMinutes(reserve.Duration))
+                    {
+                        //结束会议
+                        await FinishMeetingAsync(meetingId);
+                    }
+                }
+                else
+                {
+                    //结束会议
+                    await FinishMeetingAsync(meetingId);
+                }
             }
             else
             {
@@ -415,9 +431,14 @@ namespace MeetLive.Services.Service.Implements
                 item.MeetingStatus = 0;
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            //如果该会议是预约会议,那么要更新预约会议状态
+            var reserve = await _reserveRepository.GetByIdAsync(Convert.ToInt64(meetingId));
+            if (reserve != null)
+            {
+                reserve.Status = 1;
+            }
 
-            //更新预约会议状态
+            await _unitOfWork.SaveChangesAsync();
 
             var meetingMembers = RedisComponent.GetMeetingMemberList(meeting.MeetingId.ToString());
             foreach (var item in meetingMembers)
@@ -468,6 +489,75 @@ namespace MeetLive.Services.Service.Implements
             var data = await _meetMemberRepository.QueryWhere(t => t.MeetingId.ToString() == meetingId).ToListAsync();
 
             return ObjectMapper.Map<List<MeetingMemberDto>>(data);
+        }
+
+        /// <summary>
+        /// 预约参加会议
+        /// </summary>
+        /// <param name="reserveJoinMeetingInput"></param>
+        /// <returns></returns>
+        public async Task ReserveJoinMeetingAsync(ReserveJoinMeetingInput reserveJoinMeetingInput)
+        {
+            if (!string.IsNullOrWhiteSpace(CurrentMeetingId) && CurrentMeetingId != reserveJoinMeetingInput.MeetingId.ToString())
+            {
+                throw new BusinessException("您有未结束的会议,无法加入新会议");
+            }
+
+            //校验用户是否被拉黑
+            var checkUser = await _meetMemberRepository.QueryWhere(t => t.MeetingId == reserveJoinMeetingInput.MeetingId && t.UserId == LoginUserId).FirstOrDefaultAsync();
+            if (checkUser != null && checkUser.Status == 4)
+            {
+                throw new BusinessException("你已经被拉黑");
+            }
+
+            //判断预约会议是否存在
+            var reserve = await _reserveRepository.GetByIdAsync(reserveJoinMeetingInput.MeetingId);
+            if (reserve == null)
+            {
+                throw new BusinessException("参数错误");
+            }
+
+            //判断用户是否被邀请
+            var member = await _meetingReserveMemberRepository.QueryWhere(t => t.MeetingId == reserveJoinMeetingInput.MeetingId && t.InviteUserId == LoginUserId).FirstOrDefaultAsync();
+            if (member == null)
+            {
+                throw new BusinessException("没有被邀请");
+            }
+
+            //判断密码
+            if (reserve.JoinType == 0 && reserve.JoinPassword != reserveJoinMeetingInput.JoinPassword)
+            {
+                throw new BusinessException("入会密码错误");
+            }
+
+            var meetingInfo = await _meetInfoRepository.GetByIdAsync(reserveJoinMeetingInput.MeetingId);
+            if (meetingInfo == null)
+            {
+                meetingInfo = new MeetingInfo
+                {
+                    MeetingId = reserveJoinMeetingInput.MeetingId,
+                    MeetingNo = reserve.MeetingNo,
+                    MeetingName = reserve.MeetingName,
+                    CreatedTime = DateTime.Now,
+                    CreatedUserId = reserve.CreatedUserId,
+                    JoinType = reserve.JoinType,
+                    JoinPassword = reserve.JoinPassword,
+                    StartTime = DateTime.Now,
+                    Status = 1
+                };
+
+                await _meetInfoRepository.AddAsync(meetingInfo);
+
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString());
+            if (userDto != null)
+            {
+                userDto.CurrentMeetingId = reserveJoinMeetingInput.MeetingId.ToString();
+                userDto.NickName = reserveJoinMeetingInput.NickName;
+                RedisComponent.UpdateUserInfoByUserId(userDto);
+            }
         }
     }
 }

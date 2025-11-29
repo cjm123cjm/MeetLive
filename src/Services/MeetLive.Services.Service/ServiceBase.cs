@@ -29,12 +29,12 @@ namespace MeetLive.Services.Service
                 {
                     LoginUserId = Convert.ToInt64(httpContext.HttpContext.User.Claims.First(t => t.Type == "UserId").Value);
                     IsAdmin = Convert.ToBoolean(httpContext.HttpContext.User.Claims.First(t => t.Type == "IsAdmin").Value);
-                    LoginUserName = httpContext.HttpContext.User.Claims.First(t => t.Type == "NickName").Value.ToString();
                     LoginUserEmail = httpContext.HttpContext.User.Claims.First(t => t.Type == "Email").Value.ToString();
 
                     var userDto = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString())!;
                     MeetingNo = userDto.MeetingNo;
                     CurrentMeetingId = userDto.CurrentMeetingId;
+                    LoginUserName = userDto.NickName;
 
                     var sex = httpContext.HttpContext.User.Claims.First(t => t.Type == "Sex").Value;
                     Sex = sex == null ? null : Convert.ToInt32(sex);

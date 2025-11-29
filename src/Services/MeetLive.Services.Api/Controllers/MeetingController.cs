@@ -80,9 +80,9 @@ namespace MeetLive.Services.Api.Controllers
         [HttpPost]
         public async Task<ResponseDto> PreJoinMeeting(PreJoinMeetingInput meetingInput)
         {
-            var data = await _meetingInfoService.PreJoinMeetingAsync(meetingInput);
+            await _meetingInfoService.PreJoinMeetingAsync(meetingInput);
 
-            return new ResponseDto(data);
+            return new ResponseDto();
         }
 
         /// <summary>
@@ -217,6 +217,19 @@ namespace MeetLive.Services.Api.Controllers
             {
                 return new ResponseDto(data);
             }
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 参加预约会议
+        /// </summary>
+        /// <param name="reserveJoinMeetingInput"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> ReserveJoinMeeting(ReserveJoinMeetingInput reserveJoinMeetingInput)
+        {
+            await _meetingInfoService.ReserveJoinMeetingAsync(reserveJoinMeetingInput);
 
             return new ResponseDto();
         }

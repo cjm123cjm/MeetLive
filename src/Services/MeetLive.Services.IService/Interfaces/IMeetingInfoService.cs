@@ -32,7 +32,7 @@ namespace MeetLive.Services.IService.Interfaces
         /// </summary>
         /// <param name="meetingInput"></param>
         /// <returns></returns>
-        Task<string> PreJoinMeetingAsync(PreJoinMeetingInput meetingInput);
+        Task PreJoinMeetingAsync(PreJoinMeetingInput meetingInput);
 
         /// <summary>
         /// 退出会议
@@ -74,6 +74,13 @@ namespace MeetLive.Services.IService.Interfaces
         /// </summary>
         /// <param name="meetingId">会议id</param>
         /// <returns></returns>
-        Task<List<MeetingMemberDto>> LoadMeetingMemberAsync(string meetingId);  
+        Task<List<MeetingMemberDto>> LoadMeetingMemberAsync(string meetingId);
+
+        /// <summary>
+        /// 参加预约会议
+        /// </summary>
+        /// <param name="reserveJoinMeetingInput"></param>
+        /// <returns></returns>
+        Task ReserveJoinMeetingAsync(ReserveJoinMeetingInput reserveJoinMeetingInput);
     }
 }
