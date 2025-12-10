@@ -15,6 +15,7 @@ using Newtonsoft.Json.Serialization;
 using MeetLive.Services.WebSocket;
 using MeetLive.Services.WebSocket.Message;
 using DotNetCore.CAP;
+using MeetLive.Services.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -157,6 +158,9 @@ builder.Services.AddCap(setup =>
     //间隔10s
     setup.FailedRetryInterval = 10;
 });
+
+//打印分表sql语句
+TableSplitUtils.GetSplitTableSql();
 
 
 var app = builder.Build();
