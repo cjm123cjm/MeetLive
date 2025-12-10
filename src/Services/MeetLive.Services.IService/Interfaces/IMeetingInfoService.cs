@@ -95,5 +95,12 @@ namespace MeetLive.Services.IService.Interfaces
         /// </summary>
         /// <param name="meetingId"></param>
         void AcceptInviteAsync(long meetingId);
+
+        /// <summary>
+        /// 开启/关闭摄像头
+        /// </summary>
+        /// <param name="openVideo"></param>
+        /// <returns></returns>
+        MessageSendDto<object> UpdateMemberOpenVideoAsync(bool openVideo);
     }
 }

@@ -631,5 +631,30 @@ namespace MeetLive.Services.Service.Implements
 
             RedisComponent.UpdateUserInfoByUserId(userDto);
         }
+
+        /// <summary>
+        /// 开启/关闭摄像头
+        /// </summary>
+        /// <param name="openVideo"></param>
+        /// <returns></returns>
+        public MessageSendDto<object> UpdateMemberOpenVideoAsync(bool openVideo)
+        {
+            MeetingMemberDto meetingMemberDto = RedisComponent.GetMeetingMember(CurrentMeetingId, LoginUserId.ToString());
+            if (meetingMemberDto != null)
+            {
+                meetingMemberDto.VideoOpen = openVideo;
+                RedisComponent.SetMeetingMember(CurrentMeetingId, LoginUserId.ToString(), meetingMemberDto);
+            }
+
+            MessageSendDto<object> messageSendDto = new MessageSendDto<object>
+            {
+                MessageType = MessageTypeEnum.MEETING_USER_VIDEO_CHANGE,
+                MessageSendType = MessageSendTypeEnum.GROUP,
+                SendUserId = LoginUserId.ToString(),
+                MeetingId = CurrentMeetingId
+            };
+
+            return messageSendDto;
+        }
     }
 }

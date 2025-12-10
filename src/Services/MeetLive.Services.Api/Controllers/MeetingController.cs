@@ -264,5 +264,23 @@ namespace MeetLive.Services.Api.Controllers
 
             return new ResponseDto();
         }
+
+        /// <summary>
+        /// 打开/关闭摄像头通知
+        /// </summary>
+        /// <param name="openVideo"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ResponseDto OpenVideoChangeMessage(bool openVideo)
+        {
+            var data = _meetingInfoService.UpdateMemberOpenVideoAsync(openVideo);
+
+            if (data != null)
+            {
+                _messageHandler.SendMessage(data);
+            }
+
+            return new ResponseDto();
+        }
     }
 }
