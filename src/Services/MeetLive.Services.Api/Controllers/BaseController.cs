@@ -18,5 +18,20 @@ namespace MeetLive.Services.Api.Controllers
                 return 0;
             }
         }
+
+        /// <summary>
+        /// 当前用户登录ID
+        /// </summary>
+        public string NickName
+        {
+            get
+            {
+                if (HttpContext.User.Identity is { IsAuthenticated: true })
+                {
+                    return HttpContext.User.Claims.FirstOrDefault(p => p.Type.Equals("NickName"))!.Value;
+                }
+                return "";
+            }
+        }
     }
 }

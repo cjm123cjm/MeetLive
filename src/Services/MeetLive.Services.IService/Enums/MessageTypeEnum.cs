@@ -63,6 +63,11 @@
         /// <summary>
         /// 用户视频改变
         /// </summary>
-        MEETING_USER_VIDEO_CHANGE
+        MEETING_USER_VIDEO_CHANGE,
+
+        /// <summary>
+        /// 处理好友请求
+        /// </summary>
+        USER_CONTACT_DEAL_WITH
     }
 }

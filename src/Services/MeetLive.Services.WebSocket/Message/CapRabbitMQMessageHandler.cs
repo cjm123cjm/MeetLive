@@ -1,4 +1,5 @@
 ﻿using DotNetCore.CAP;
+using DotNetCore.CAP.Messages;
 using MeetLive.Services.IService.Dtos;
 using Microsoft.Extensions.Logging;
 

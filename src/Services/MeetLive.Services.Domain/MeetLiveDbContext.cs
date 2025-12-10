@@ -22,6 +22,17 @@ namespace MeetLive.Services.Domain
                 t.HasKey(m => m.UserId);
                 t.HasIndex(m => m.Email).IsUnique();
             });
+
+            modelBuilder.Entity<UserContactApply>(t =>
+            {
+                t.HasKey(m => m.ApplyId);
+                t.HasIndex(m => new { m.ApplyUserId, m.ReceiveUserId }).IsUnique();
+                t.HasIndex(m => m.LastApplyTime);
+            });
+            modelBuilder.Entity<UserContact>(t =>
+            {
+                t.HasKey(m => new { m.UserId, m.ContactId });
+            });
         }
     }
 }
