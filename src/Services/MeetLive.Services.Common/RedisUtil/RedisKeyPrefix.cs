@@ -48,5 +48,10 @@
         /// </summary>
         public const string Redis_Key_Meeting_Root = "Redis_Key_Meeting_Root_";
 
+        /// <summary>
+        /// 邀请会议
+        /// </summary>
+        public const string Redis_Key_Invite_Member = "Redis_Key_Invite_Member_";
+
     }
 }

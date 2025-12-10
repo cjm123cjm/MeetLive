@@ -21,6 +21,7 @@ namespace MeetLive.Services.Service.Implements
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMeetingReserveRepository _reserveRepository;
+        private readonly IUserContactRepository _userContactRepository;
         private readonly IMeetingReserveMemberRepository _meetingReserveMemberRepository;
 
         public MeetingInfoService(
@@ -29,7 +30,8 @@ namespace MeetLive.Services.Service.Implements
             IJwtTokenGenerator jwtTokenGenerator,
             IUnitOfWork unitOfWork,
             IMeetingReserveRepository reserveRepository,
-            IMeetingReserveMemberRepository meetingReserveMemberRepository)
+            IMeetingReserveMemberRepository meetingReserveMemberRepository,
+            IUserContactRepository userContactRepository)
         {
             _meetInfoRepository = meetInfoRepository;
             _meetMemberRepository = meetMemberRepository;
@@ -37,6 +39,7 @@ namespace MeetLive.Services.Service.Implements
             _unitOfWork = unitOfWork;
             _reserveRepository = reserveRepository;
             _meetingReserveMemberRepository = meetingReserveMemberRepository;
+            _userContactRepository = userContactRepository;
         }
 
         /// <summary>
@@ -558,6 +561,75 @@ namespace MeetLive.Services.Service.Implements
                 userDto.NickName = reserveJoinMeetingInput.NickName;
                 RedisComponent.UpdateUserInfoByUserId(userDto);
             }
+        }
+
+        /// <summary>
+        /// 邀请入会
+        /// </summary>
+        /// <param name="selectContactIds">邀请人ids</param>
+        /// <returns></returns>
+        public async Task<List<MessageSendDto<object>>> InviteMemberAsync(string selectContactIds)
+        {
+            var contactIds = selectContactIds.Split(',').Select(t => Convert.ToInt64(t)).ToList();
+            var userContacts = await _userContactRepository.QueryWhere(t => t.UserId == LoginUserId && contactIds.Contains(t.ContactId) && t.Status == 1).ToListAsync();
+            if (userContacts.Count != contactIds.Count)
+            {
+                throw new BusinessException("存在邀请人不是你的好友");
+            }
+
+            var meetInfo = await _meetInfoRepository.GetByIdAsync(Convert.ToInt64(CurrentMeetingId));
+            if (meetInfo == null)
+            {
+                throw new BusinessException("会议不存在");
+            }
+
+            List<MessageSendDto<object>> sendDtos = new List<MessageSendDto<object>>();
+            foreach (var item in contactIds)
+            {
+                var meetMember = await _meetMemberRepository.QueryWhere(t => t.MeetingId == meetInfo.MeetingId && t.UserId == item).FirstOrDefaultAsync();
+                //正常
+                if (meetMember != null && meetMember.Status == 1)
+                {
+                    continue;
+                }
+
+                RedisComponent.AddInviteInfo(meetInfo.MeetingId.ToString(), item.ToString());
+
+                sendDtos.Add(new MessageSendDto<object>
+                {
+                    MessageType = MessageTypeEnum.INVITE_MEMBER_MEETING,
+                    MessageSendType = MessageSendTypeEnum.USER,
+                    ReceiveUserId = item.ToString(),
+                    MessageContent = new MeetingInviteDto
+                    {
+                        MeetingId = meetInfo.MeetingId.ToString(),
+                        InviteUserName = LoginUserName,
+                        MeetingName = meetInfo.MeetingName
+                    }
+                });
+            }
+
+            return sendDtos;
+        }
+
+        /// <summary>
+        /// 接受邀请
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <returns></returns>
+        public void AcceptInviteAsync(long meetingId)
+        {
+            var redisMeetingId = RedisComponent.GetInviteInfo(meetingId.ToString(), LoginUserId.ToString());
+            if (string.IsNullOrWhiteSpace(redisMeetingId))
+            {
+                throw new BusinessException("邀请已过期");
+            }
+
+            CurrentMeetingId = meetingId.ToString();
+
+            var userDto = GetUserInfoDto();
+
+            RedisComponent.UpdateUserInfoByUserId(userDto);
         }
     }
 }

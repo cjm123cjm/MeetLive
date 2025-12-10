@@ -88,5 +88,25 @@ namespace MeetLive.Services.Service
         {
             return CacheManager.Get<UserInfoDto>(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userId);
         }
+
+        /// <summary>
+        /// 添加邀请信息,5分钟过期
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <param name="userId"></param>
+        public static void AddInviteInfo(string meetingId, string userId)
+        {
+            CacheManager.GetOrSet(RedisKeyPrefix.Redis_Key_Invite_Member + userId + meetingId, () => meetingId, TimeSpan.FromMinutes(5));
+        }
+
+        /// <summary>
+        /// 获取邀请信息
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <param name="userId"></param>
+        public static string GetInviteInfo(string meetingId, string userId)
+        {
+            return CacheManager.Get<string>(RedisKeyPrefix.Redis_Key_Invite_Member + userId + meetingId);
+        }
     }
 }

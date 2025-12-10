@@ -82,5 +82,18 @@ namespace MeetLive.Services.IService.Interfaces
         /// <param name="reserveJoinMeetingInput"></param>
         /// <returns></returns>
         Task ReserveJoinMeetingAsync(ReserveJoinMeetingInput reserveJoinMeetingInput);
+
+        /// <summary>
+        /// 邀请入会
+        /// </summary>
+        /// <param name="selectContactIds">邀请人ids</param>
+        /// <returns></returns>
+        Task<List<MessageSendDto<object>>> InviteMemberAsync(string selectContactIds);
+
+        /// <summary>
+        /// 接受邀请
+        /// </summary>
+        /// <param name="meetingId"></param>
+        void AcceptInviteAsync(long meetingId);
     }
 }

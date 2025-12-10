@@ -233,5 +233,36 @@ namespace MeetLive.Services.Api.Controllers
 
             return new ResponseDto();
         }
+
+        /// <summary>
+        /// 邀请入会
+        /// </summary>
+        /// <param name="selectContactIds"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> InviteMember(string selectContactIds)
+        {
+            var data = await _meetingInfoService.InviteMemberAsync(selectContactIds);
+
+            foreach (var item in data)
+            {
+                _messageHandler.SendMessage(item);
+            }
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 接受邀请
+        /// </summary>
+        /// <param name="selectContactIds"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ResponseDto AcceptInvite(long meetingId)
+        {
+            _meetingInfoService.AcceptInviteAsync(meetingId);
+
+            return new ResponseDto();
+        }
     }
 }
