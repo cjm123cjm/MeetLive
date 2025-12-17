@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MeetLive.Services.Common.Snowflake;
 using MeetLive.Services.IService.Dtos.Outputs;
+using MeetLive.Services.IService.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ namespace MeetLive.Services.Service
         protected IMapper ObjectMapper { get; set; }
         protected string ServerUrl { get; set; }
         protected IdWorker SnowIdWorker { get; set; }
+        protected FolderPath FolderPath { get; set; }
         public ServiceBase()
         {
             var httpContext = LocationStorage.Instance.GetService<IHttpContextAccessor>()!;
@@ -43,6 +45,8 @@ namespace MeetLive.Services.Service
             }
 
             ObjectMapper = LocationStorage.Instance.GetService<IMapper>()!;
+
+            FolderPath = LocationStorage.Instance.GetRequiredService<IOptions<FolderPath>>().Value;
 
             SnowIdWorker = SnowflakeUtil.CreateIdWorker();
         }

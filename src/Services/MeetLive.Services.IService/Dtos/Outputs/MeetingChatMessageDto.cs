@@ -1,11 +1,9 @@
-﻿using System.ComponentModel;
-
-namespace MeetLive.Services.Domain.Entities
+﻿namespace MeetLive.Services.IService.Dtos.Outputs
 {
     /// <summary>
-    /// 会议消息表
+    /// 会议消息输出参数
     /// </summary>
-    public class MeetingChatMessage
+    public class MeetingChatMessageDto
     {
         public long MessageId { get; set; }
         /// <summary>
@@ -13,7 +11,7 @@ namespace MeetLive.Services.Domain.Entities
         /// </summary>
         public long MeetingId { get; set; }
         /// <summary>
-        /// 消息类型,5-文本消息,6-媒体消息
+        /// 消息类型
         /// </summary>
         public int MessageType { get; set; }
         /// <summary>
@@ -42,7 +40,7 @@ namespace MeetLive.Services.Domain.Entities
         /// <summary>
         /// 接收人
         /// </summary>
-        public long ReceiveUserId { get; set; }
+        public long? ReceiveUserId { get; set; }
         /// <summary>
         /// 文件大小
         /// </summary>
@@ -63,17 +61,5 @@ namespace MeetLive.Services.Domain.Entities
         /// 状态:是否发送完成,0-未完成,1-已完成
         /// </summary>
         public int Status { get; set; }
-    }
-    public enum FileTypeEnum
-    {
-        /// <summary>
-        /// .jpeg,'.jpg','.png','.gif','.bmp','.webp'
-        /// </summary>
-        Image,
-
-        /// <summary>
-        /// .mp4,.avi,.rmvb,.mkv,.mov
-        /// </summary>
-        Video
     }
 }

@@ -16,6 +16,7 @@ using MeetLive.Services.WebSocket;
 using MeetLive.Services.WebSocket.Message;
 using DotNetCore.CAP;
 using MeetLive.Services.Common;
+using MeetLive.Services.IService.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -159,6 +160,9 @@ builder.Services.AddCap(setup =>
     setup.FailedRetryInterval = 10;
 });
 
+//注册上传文件配置
+builder.Services.Configure<FolderPath>(builder.Configuration.GetSection("FolderPath"));
+
 //打印分表sql语句
 TableSplitUtils.GetSplitTableSql();
 
@@ -178,6 +182,9 @@ LocationStorage.Instance = app.Services;
 app.UseErrorHandling();
 
 app.UseCors("MeetLive.Client");
+
+//注册静态文件
+app.UseStaticFiles();
 
 //认证
 app.UseAuthentication();

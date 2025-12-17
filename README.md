@@ -50,5 +50,5 @@ String random = StringTools.getRandomString(12);=》MeetingId
 
 快速找到对应的表、数据可以均匀，
 
-根据业务场景：时间、id哈希分表
+根据业务场景：时间、id哈希分表...
 
