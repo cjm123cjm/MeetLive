@@ -30,5 +30,6 @@
         /// 当前正在参加的会议号
         /// </summary>
         public string? CurrentMeetingId { get; set; } = null;
+        public string? Token { get; set; } = null;
     }
 }

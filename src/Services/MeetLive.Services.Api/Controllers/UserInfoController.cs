@@ -1,9 +1,11 @@
 ﻿using MeetLive.Services.Common.Captcha;
 using MeetLive.Services.Common.RedisUtil;
+using MeetLive.Services.Domain.CustomerException;
 using MeetLive.Services.IService.Dtos;
 using MeetLive.Services.IService.Dtos.Inputs;
 using MeetLive.Services.IService.Interfaces;
 using MeetLive.Services.IService.Options;
+using MeetLive.Services.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -135,18 +137,38 @@ namespace MeetLive.Services.Api.Controllers
         }
 
         /// <summary>
-        /// 获取用户头像
+        /// 更新用户头像
         /// </summary>
         [HttpGet]
         public async Task<ResponseDto> UploadAvatar(IFormFile formFile)
         {
-            // 3. 文件验证
+            try
+            {
+                await UploadImage(formFile);
+
+                return new ResponseDto();
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDto(false, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 上传头像
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
+        /// <exception cref="BusinessException"></exception>
+        [NonAction]
+        private async Task UploadImage(IFormFile formFile)
+        {
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
             var fileExtension = Path.GetExtension(formFile.FileName).ToLower();
 
             if (!allowedExtensions.Contains(fileExtension))
             {
-                return new ResponseDto(false, "请上传图片类型的文件");
+                throw new BusinessException("请上传图片类型的文件");
             }
 
             string folder = Path.Combine(_options.Value.PhysicalPath, "avatar");
@@ -157,7 +179,7 @@ namespace MeetLive.Services.Api.Controllers
 
             //将图片文件转成jpg类型
             string tempFileName = $"{LoginUserId}_temp{fileExtension}";
-            string tempFilePath = Path.Combine(folder, "avatar", tempFileName);
+            string tempFilePath = Path.Combine(folder, tempFileName);
             // 保存上传的临时文件
             using (var stream = new FileStream(tempFilePath, FileMode.Create))
             {
@@ -166,7 +188,7 @@ namespace MeetLive.Services.Api.Controllers
             var tempFileInfo = new FileInfo(tempFilePath);
             string targetExtension = ".jpg";
             string targetFileName = $"{LoginUserId}{targetExtension}";
-            string finalFilePath = Path.Combine(folder, "avatar", targetFileName);
+            string finalFilePath = Path.Combine(folder, targetFileName);
 
             _ffmpegUtils.TransferImageType(tempFileInfo, finalFilePath);
 
@@ -175,6 +197,59 @@ namespace MeetLive.Services.Api.Controllers
             {
                 tempFileInfo.Delete();
             }
+        }
+
+        /// <summary>
+        /// 获取系统设置
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ResponseDto GetSysSetting()
+        {
+            var sys = RedisComponent.GetSysSetting();
+
+            return new ResponseDto(sys);
+        }
+
+        /// <summary>
+        /// 保存系统设置
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ResponseDto SaveSysSetting(SysSettingDto sysSettingDto)
+        {
+            RedisComponent.SetSysSetting(sysSettingDto);
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 修改用户信息
+        /// </summary>
+        /// <param name="updateUserInfoInput"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> UpdateUserInfo([FromForm] UpdateUserInfoInput updateUserInfoInput)
+        {
+            await _userInfoService.UpdateUserInfoAsync(updateUserInfoInput);
+
+            if (updateUserInfoInput.Avatar != null)
+            {
+                await UploadImage(updateUserInfoInput.Avatar);
+            }
+
+            return new ResponseDto();
+        }
+
+        /// <summary>
+        /// 修改密码
+        /// </summary>
+        /// <param name="updatePasswordInput"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResponseDto> UpdatePassword(UpdatePasswordInput updatePasswordInput)
+        {
+            await _userInfoService.UpdatePasswordAsync(updatePasswordInput);
 
             return new ResponseDto();
         }

@@ -1,5 +1,7 @@
 ﻿using MeetLive.Services.Common.RedisUtil;
+using MeetLive.Services.IService.Dtos;
 using MeetLive.Services.IService.Dtos.Outputs;
+using Newtonsoft.Json.Linq;
 
 namespace MeetLive.Services.Service
 {
@@ -70,6 +72,21 @@ namespace MeetLive.Services.Service
         }
 
         /// <summary>
+        /// 清除某个用户信息
+        /// </summary>
+        /// <param name="userDto"></param>
+        /// <param name="token"></param>
+        public static void ClearUserInfo(string userId)
+        {
+            var user = CacheManager.Get<UserInfoDto>(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userId);
+            if (user != null)
+            {
+                CacheManager.Remove(RedisKeyPrefix.Redis_Key_Ws_Token + user.Token);
+                CacheManager.Remove(RedisKeyPrefix.Redis_Key_Ws_Token_UserId + userId);
+            }
+        }
+
+        /// <summary>
         /// 根据token获取用户信息
         /// </summary>
         /// <param name="token"></param>
@@ -107,6 +124,26 @@ namespace MeetLive.Services.Service
         public static string GetInviteInfo(string meetingId, string userId)
         {
             return CacheManager.Get<string>(RedisKeyPrefix.Redis_Key_Invite_Member + userId + meetingId);
+        }
+
+        /// <summary>
+        /// 获取系统设置
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <param name="userId"></param>
+        public static SysSettingDto GetSysSetting()
+        {
+            return CacheManager.Get<SysSettingDto>(RedisKeyPrefix.Redis_Key_Sys_Setting);
+        }
+
+        /// <summary>
+        /// 保存系统设置
+        /// </summary>
+        /// <param name="meetingId"></param>
+        /// <param name="userId"></param>
+        public static void SetSysSetting(SysSettingDto sysSettingDto)
+        {
+            CacheManager.Set(RedisKeyPrefix.Redis_Key_Sys_Setting, sysSettingDto);
         }
     }
 }

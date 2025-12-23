@@ -53,5 +53,10 @@
         /// </summary>
         public const string Redis_Key_Invite_Member = "Redis_Key_Invite_Member_";
 
+        /// <summary>
+        /// 系统设置
+        /// </summary>
+        public const string Redis_Key_Sys_Setting = "Redis_Key_sys_setting";
+
     }
 }

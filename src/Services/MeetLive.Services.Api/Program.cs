@@ -166,6 +166,8 @@ builder.Services.Configure<FolderPath>(builder.Configuration.GetSection("FolderP
 //打印分表sql语句
 TableSplitUtils.GetSplitTableSql();
 
+//系统设置
+builder.Services.Configure<SysSettingDto>(builder.Configuration.GetSection("SysSetting"));
 
 var app = builder.Build();
 

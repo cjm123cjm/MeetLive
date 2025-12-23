@@ -18,5 +18,19 @@ namespace MeetLive.Services.IService.Interfaces
         /// <param name="loginInput"></param>
         /// <returns></returns>
         Task<LoginResponseDto> LoginAsync(LoginInput loginInput);
+
+        /// <summary>
+        /// 修改用户信息
+        /// </summary>
+        /// <param name="updateUserInfoInput"></param>
+        /// <returns></returns>
+        Task UpdateUserInfoAsync(UpdateUserInfoInput updateUserInfoInput);
+
+        /// <summary>
+        /// 修改密码
+        /// </summary>
+        /// <param name="updatePasswordInput"></param>
+        /// <returns></returns>
+        Task UpdatePasswordAsync(UpdatePasswordInput updatePasswordInput);
     }
 }

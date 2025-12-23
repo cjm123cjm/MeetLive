@@ -90,7 +90,7 @@ namespace MeetLive.Services.Service.Implements
             }
 
             var token = _jwtTokenGenerator.GenerateToken(userDto);
-
+            userDto.Token = token;
             //数据存到redis里
             RedisComponent.SetUserInfo(userDto, token);
 
@@ -99,6 +99,62 @@ namespace MeetLive.Services.Service.Implements
                 Token = token,
                 User = userDto
             };
+        }
+
+        /// <summary>
+        /// 修改用户信息
+        /// </summary>
+        /// <param name="updateUserInfoInput"></param>
+        /// <returns></returns>
+        /// <exception cref="BusinessException"></exception>
+        public async Task UpdateUserInfoAsync(UpdateUserInfoInput updateUserInfoInput)
+        {
+            var userInfo = await _userInfoRepository.GetByIdAsync(LoginUserId);
+            if (userInfo == null)
+            {
+                throw new BusinessException("参数错误");
+            }
+
+            userInfo.Sex = updateUserInfoInput.Sex;
+            userInfo.NickName = updateUserInfoInput.NickName;
+
+            var user = RedisComponent.GetUserInfoByUserId(LoginUserId.ToString());
+            if (user != null)
+            {
+                user.NickName = updateUserInfoInput.NickName;
+                user.Sex = updateUserInfoInput.Sex;
+
+                RedisComponent.UpdateUserInfoByUserId(user);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// 修改密码
+        /// </summary>
+        /// <param name="updatePasswordInput"></param>
+        /// <returns></returns>
+        /// <exception cref="BusinessException"></exception>
+        public async Task UpdatePasswordAsync(UpdatePasswordInput updatePasswordInput)
+        {
+            var userInfo = await _userInfoRepository.GetByIdAsync(LoginUserId);
+            if (userInfo == null)
+            {
+                throw new BusinessException("参数错误");
+            }
+
+            if (!userInfo.Password.Equals(updatePasswordInput.OldPassword, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new BusinessException("旧密码错误");
+            }
+
+            userInfo.Password = updatePasswordInput.NewPassword;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            //清除用信息
+            RedisComponent.ClearUserInfo(LoginUserId.ToString());
         }
     }
 }
