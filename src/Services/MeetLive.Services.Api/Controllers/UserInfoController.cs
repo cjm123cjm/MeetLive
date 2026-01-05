@@ -200,30 +200,6 @@ namespace MeetLive.Services.Api.Controllers
         }
 
         /// <summary>
-        /// 获取系统设置
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public ResponseDto GetSysSetting()
-        {
-            var sys = RedisComponent.GetSysSetting();
-
-            return new ResponseDto(sys);
-        }
-
-        /// <summary>
-        /// 保存系统设置
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public ResponseDto SaveSysSetting(SysSettingDto sysSettingDto)
-        {
-            RedisComponent.SetSysSetting(sysSettingDto);
-
-            return new ResponseDto();
-        }
-
-        /// <summary>
         /// 修改用户信息
         /// </summary>
         /// <param name="updateUserInfoInput"></param>

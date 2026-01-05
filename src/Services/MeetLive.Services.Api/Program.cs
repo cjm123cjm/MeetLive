@@ -169,6 +169,12 @@ TableSplitUtils.GetSplitTableSql();
 //系统设置
 builder.Services.Configure<SysSettingDto>(builder.Configuration.GetSection("SysSetting"));
 
+//添加权限策略
+builder.Services.AddAuthorization(option =>
+{
+    option.AddPolicy("IsAdmin", policy => policy.RequireClaim("IsAdmin", "true", "True", "TRUE"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -31,5 +31,9 @@
         /// </summary>
         public string? CurrentMeetingId { get; set; } = null;
         public string? Token { get; set; } = null;
+        /// <summary>
+        /// 是否在线
+        /// </summary>
+        public int OnLineType { get; set; }
     }
 }
