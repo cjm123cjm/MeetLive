@@ -16,6 +16,7 @@ namespace MeetLive.Services.Domain
         public DbSet<MeetingReserve> MeetingReserves { get; set; }
         public DbSet<MeetingReserveMember> MeetingReserveMembers { get; set; }
         public DbSet<MeetingChatMessage> MeetingChatMessages { get; set; }
+        public DbSet<AppUpdate> AppUpdates { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserInfo>(t =>
@@ -33,6 +34,11 @@ namespace MeetLive.Services.Domain
             modelBuilder.Entity<UserContact>(t =>
             {
                 t.HasKey(m => new { m.UserId, m.ContactId });
+            });
+
+            modelBuilder.Entity<AppUpdate>(t =>
+            {
+                t.HasIndex(m => m.Version).IsUnique;
             });
         }
     }
