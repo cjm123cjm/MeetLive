@@ -1,7 +1,7 @@
 {
-  "name": "EasyMeeting",
+  "name": "MeetLive",
   "version": "1.0.0",
-  "description": "EasyMeeting",
+  "description": "MeetLive",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
@@ -39,7 +39,7 @@
       "installerHeaderIcon": "./resources/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "EasyMeeting"
+      "shortcutName": "MeetLive"
     },
     "mac": {
       "icon": "icons/icon.icns"
